@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="api-gateway" />
+        <module name="api-transaccion" />
+        <module name="api-config" />
+        <module name="api-eureka" />
+        <module name="api-cuenta" />
+        <module name="api-usuario" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-config" options="-parameters" />
+      <module name="api-cuenta" options="-parameters" />
+      <module name="api-eureka" options="-parameters" />
+      <module name="api-gateway" options="-parameters" />
+      <module name="api-transaccion" options="-parameters" />
+      <module name="api-usuario" options="-parameters" />
+      <module name="wallet-Jorgito" options="" />
+    </option>
+  </component>
+</project>
