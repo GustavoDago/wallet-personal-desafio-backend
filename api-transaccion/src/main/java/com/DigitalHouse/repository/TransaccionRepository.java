@@ -8,6 +8,6 @@ import java.util.List;
 @Repository
 public interface TransaccionRepository extends CrudRepository<Transaccion,Long> {
 
-    List<Transaccion> findByAccountIdAndType(Long accountId, String type);
+    List<Transaccion> findByCuentaIdAndTipo(Long accountId, String type);
 
 }
