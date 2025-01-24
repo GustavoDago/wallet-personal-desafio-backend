@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api-cuenta")
+@RequestMapping()
 public class CuentaController {
     @Autowired
     private CuentaService cuentaService;

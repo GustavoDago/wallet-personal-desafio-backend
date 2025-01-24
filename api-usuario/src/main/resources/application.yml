@@ -15,7 +15,12 @@ spring:
       enabled: true
   config:
     import: optional:configserver:http://localhost:8888
-
+  security:
+    oauth2:
+      client:
+        resourceserver:
+          jwt:
+            issuer-uri: ${app.keycloak.serverUrl}/realms/${app.keycloak.realm}
 eureka:
   client:
     service-url:
@@ -23,4 +28,12 @@ eureka:
     instance:
       prefer-ip-address: true
 server:
-  port: 0
+  port: 8800
+app:
+  keycloak:
+    admin:
+      clientId: admin-cli
+      clientSecret: Y1jxfCXlaLYyVrUGOCfRpUB1Yv5lH4d7
+    realm: spring
+    serverUrl: http://localhost:9081
+
