@@ -8,18 +8,19 @@ import com.microservices.usuario.records.UserWithToken;
 import org.keycloak.admin.client.resource.UserResource;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface UsuarioService {
 
     UserWithToken crearUsuario(NewUserRecord usuario) throws ResourceBadRequestException, NotApprovedTransaction;
-    UserResource getUser(String userId);
+    UserResource getUserResource(String userId);
     void eliminarUsuario(String userId);
     ResponseEntity<Map<String, Object>> updateUser(String id, Map<String, Object> data, String token);
     String login(String email, String password) throws ResourceBadRequestException;
 
-
     Usuario obtenerUsuarioPorId(String id);
+
+    String obtenerUserName(String id);
+
+    UserResource getUser(String userId);
 }

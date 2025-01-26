@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CuentaRepository extends CrudRepository<Cuenta,Long> {
-    Optional<Cuenta> findByUserId(Long userId);
+public interface CuentaRepository extends CrudRepository<Cuenta,String > {
+    Optional<Cuenta> findByUserId(String userId);
 }

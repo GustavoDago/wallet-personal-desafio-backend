@@ -79,7 +79,7 @@ public class UsuarioServiceImp implements UsuarioService{
     }
 
     @Override
-    public UserResource getUser(String userId) {
+    public UserResource getUserResource(String userId) {
         UsersResource usersResource = getUsersResource();
         return usersResource.get(userId);
     }
@@ -185,6 +185,7 @@ public class UsuarioServiceImp implements UsuarioService{
             UserRepresentation user = fetchUser(id);
             updateUserRepresentation(user, data);
             performKeycloakUpdate(id, user);
+            log.debug("Construyendo respuesta exitosa para la actualización del usuario con ID: {}", id);
             return buildSuccessResponse(id, user);
 
         } catch (ResourceBadRequestException e) {
@@ -278,7 +279,7 @@ public class UsuarioServiceImp implements UsuarioService{
     }
 
     private ResponseEntity<Map<String, Object>> buildSuccessResponse(String id, UserRepresentation user) {
-        log.debug("Construyendo respuesta exitosa para la actualización del usuario con ID: {}", id);
+
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("id", id);
         responseBody.put("email", user.getEmail());
@@ -323,7 +324,7 @@ public class UsuarioServiceImp implements UsuarioService{
     @Override
     public Usuario obtenerUsuarioPorId(String id) {
         // 1. Get UserRepresentation from Keycloak
-        UserResource userResource = getUser(id);
+        UserResource userResource = getUserResource(id);
         UserRepresentation userRepresentation = userResource.toRepresentation();
 
         // 2. Create a Map with the required data
@@ -344,5 +345,23 @@ public class UsuarioServiceImp implements UsuarioService{
         }
 
         return userData;
+    }
+
+
+
+    @Override
+    public String obtenerUserName(String id) {
+            String respuesta = "";
+            UserRepresentation userRepresentation = getUser(id).toRepresentation();
+            if (userRepresentation.isEnabled()){
+                respuesta = userRepresentation.getUsername();
+            }
+            return respuesta;
+    }
+
+    @Override
+    public UserResource getUser(String userId) {
+        UsersResource usersResource = getUsersResource();
+        return usersResource.get(userId);
     }
 }

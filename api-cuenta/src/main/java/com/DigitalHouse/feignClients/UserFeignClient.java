@@ -1,6 +1,8 @@
 package com.DigitalHouse.feignClients;
 
-import DPB.Account_Service.model.Account;
+
+import com.DigitalHouse.Entity.Cuenta;
+import org.keycloak.admin.client.resource.UserResource;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,12 +12,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Map;
 
-@FeignClient(name = "user-service")
+@FeignClient(name = "api-usuario")
 public interface UserFeignClient {
     @PostMapping("/users/{userId}/accounts")
-    ResponseEntity<Account> createAccount(@PathVariable String userId, @RequestHeader("Authorization") String accessToken, Account account);
+    ResponseEntity<Cuenta> createAccount(@PathVariable String userId, @RequestHeader("Authorization") String accessToken, Cuenta cuenta);
 
-    @GetMapping("/users/{userId}")
-    ResponseEntity<Map> getUserData(@PathVariable String userId, @RequestHeader("Authorization") String accessToken);
+    @GetMapping("/userName/{userId}")
+    ResponseEntity<String> obtenerUserName (@PathVariable("userId") String userId, @RequestHeader("Authorization") String  accessToken);
 }
 

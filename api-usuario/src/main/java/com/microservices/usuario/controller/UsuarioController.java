@@ -8,6 +8,7 @@ import com.microservices.usuario.records.NewUserRecord;
 import com.microservices.usuario.records.UserCredentials;
 import com.microservices.usuario.records.UserWithToken;
 import com.microservices.usuario.service.UsuarioService;
+import org.keycloak.admin.client.resource.UserResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,11 @@ public class UsuarioController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/userName/{userId}")
+    public ResponseEntity<String > obtenerUserName(@PathVariable String userId, @RequestHeader("Authorization") String  accessToken){
+        return ResponseEntity.ok(usuarioService.obtenerUserName(userId));
+   }
 
     // Metodo para recibir la solicitud PATCH y delegar al servicio
     @PatchMapping("/users/{id}")

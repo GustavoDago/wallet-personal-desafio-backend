@@ -8,13 +8,26 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
+  security:
+    oauth2:
+      client:
+        resourceserver:
+          jwt:
+            issuer-uri: ${app.keycloak.serverUrl}/realms/${app.keycloak.realm}
 server:
-  port: 0
+  port: 8089
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
     instance:
       prefer-ip-address: true
+app:
+  keycloak:
+    admin:
+      clientId: admin-cli
+      clientSecret: Y1jxfCXlaLYyVrUGOCfRpUB1Yv5lH4d7
+    realm: spring
+    serverUrl: http://localhost:9081
