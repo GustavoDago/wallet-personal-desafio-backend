@@ -1,33 +1,70 @@
 package com.DigitalHouse.controller;
 
-import com.DigitalHouse.entity.Transaccion;
+import com.DigitalHouse.entity.Transaction;
+import com.DigitalHouse.exceptions.NotApprovedTransaction;
+import com.DigitalHouse.exceptions.ResourceNotFoundException;
+import com.DigitalHouse.records.CreateActivityRequest;
+import com.DigitalHouse.records.RecordTransaction;
 import com.DigitalHouse.service.TransaccionServiceImp;
-import jakarta.transaction.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/transaccion")
 public class TransaccionController {
     @Autowired
-    private TransaccionServiceImp transaccionService;
+    private TransaccionServiceImp transactionService;
 
     public TransaccionController(TransaccionServiceImp transaccionService) {
-        this.transaccionService = transaccionService;
+        this.transactionService = transaccionService;
     }
 
-    @PostMapping
-    public ResponseEntity<Transaccion> createTransaction(@RequestParam Long accountId, @RequestParam String type, @RequestParam BigDecimal amount) {
-        Transaction transaction = (Transaction) transaccionService.crearTransaccion(accountId, type, amount);
-        return ResponseEntity.ok((Transaccion) transaction);
+    @GetMapping("/users/{userId}/activities")
+    public ResponseEntity<List<Transaction>> getUserActivities(
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String token,
+            @RequestParam Optional<Integer> limit) {
+        List<Transaction> activities = transactionService.getUserActivities(userId, token, limit);
+        return ResponseEntity.ok(activities);
     }
 
-    @GetMapping("/{cuentaId}")
-    public ResponseEntity<List<Transaccion>> getTransactions(@PathVariable Long accountId, @RequestParam String type) {
-        return ResponseEntity.ok(transaccionService.obtenerTransaccionPorTipo(accountId, type));
+    @GetMapping("/users/{userId}/activities/")
+    public ResponseEntity<RecordTransaction> getUserActivities(
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String token,
+            @PathVariable String activityId) throws ResourceNotFoundException {
+        RecordTransaction activity = transactionService.getUserActivity(userId, token, activityId);
+        return ResponseEntity.ok(activity);
+    }
+
+    @PostMapping("/users/{userId}/activities")
+    public ResponseEntity<?> createActivity(
+            @PathVariable String userId,
+            @RequestBody CreateActivityRequest activityRequest,
+            @RequestHeader("Authorization") String token) throws ResourceNotFoundException, NotApprovedTransaction {
+
+
+        try {
+            Transaction transaction;
+            if ("Deposit".equals(activityRequest.type().getType())) {
+                transaction = transactionService.createDeposit(userId, activityRequest, token);
+
+            } else if ("Transfer".equals(activityRequest.type().getType())) {
+                transaction = transactionService.createTransfer(userId, activityRequest, token);
+            } else {
+                return ResponseEntity.badRequest().body("Invalid activity type");
+            }
+            return ResponseEntity.ok(transaction);
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        } catch (NotApprovedTransaction e) {
+            throw new NotApprovedTransaction(e.getMessage());
+        }
+
     }
 }
