@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/transaccion")
+@RequestMapping()
 public class TransaccionController {
     @Autowired
     private TransaccionServiceImp transactionService;

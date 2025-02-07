@@ -17,6 +17,14 @@ spring:
           uri: lb://API-TRANSACCIONES
           predicates:
             - Path=/api-transacciones/**
+        - id: usuario-service
+          uri: lb://API-USUARIO
+          predicates:
+            - Path=/api-usuario/**
+        - id: cards-service
+          uri: lb://API-CARDS
+          predicates:
+            - Path=/api-cards/**
 
 eureka:
   client:

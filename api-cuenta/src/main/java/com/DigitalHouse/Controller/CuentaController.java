@@ -31,6 +31,12 @@ public class CuentaController {
         }
     }
 
+    @GetMapping("/accounts")
+    public List<Cuenta> getAccounts(){
+        List<Cuenta> cuentas = cuentaService.listarCuentas();
+        return cuentas;
+    }
+
     @GetMapping("/users/{userId}/accounts")
     public ResponseEntity<?> getAccount(@PathVariable String userId,
                                         @RequestHeader("Authorization") String accessToken) {
