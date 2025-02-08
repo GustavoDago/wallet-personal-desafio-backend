@@ -1,4 +1,4 @@
-package Cards.feignClients;
+package com.DigitalHouse.app.api_transactions.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Map;
 
-@FeignClient(name = "api-usuario")
+@FeignClient(contextId = "transaction", name = "api-usuario")
 public interface UserFeignClient {
+
     @GetMapping("/users/{userId}")
     ResponseEntity<Map> getUserData(@PathVariable String userId, @RequestHeader("Authorization") String accessToken);
 }
