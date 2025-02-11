@@ -57,7 +57,7 @@ public class CardController {
     }
 
     private boolean existsUser(String userId, String token) {
-        return userFeignClient.getUserData(userId, token).getStatusCode().is2xxSuccessful();
+        return userFeignClient.obtenerUsuarioPorId(userId, token).getStatusCode().is2xxSuccessful();
     }
 
     @DeleteMapping("/{cardId}")

@@ -310,7 +310,6 @@ export const createTransferActivity = (
         amount,
         origin,
         destination,
-        name,
       }),
     }
   )

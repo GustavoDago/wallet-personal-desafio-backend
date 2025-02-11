@@ -1,4 +1,4 @@
-package com.DigitalHouse.config;
+package Cards.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -26,9 +26,9 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
         httpSecurity
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/users/{userId}/accounts", "/login","/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/public/**", "/users/{userId}/accounts").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/public/**", "/users/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/{userId}/cards").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/{userId}/cards/{cardId}", "/users/{userId}/cards").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/users/{userId}/cards/{cardId}").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/public/**", "/users/{id}/send-verification-email", "/users/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/configuration/**", "/swagger-ui/**",

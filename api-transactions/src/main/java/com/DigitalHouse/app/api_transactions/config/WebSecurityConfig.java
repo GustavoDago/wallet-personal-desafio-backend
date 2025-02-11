@@ -1,4 +1,5 @@
-package com.DigitalHouse.config;
+package com.DigitalHouse.app.api_transactions.config;
+
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +38,7 @@ public class WebSecurityConfig {
                 )
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Arrays.asList("http://localhost:3500")); // Replace with your frontend URL
+                    config.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Replace with your frontend URL
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(Arrays.asList("*")); // You might want to be more specific here in production
                     return config;

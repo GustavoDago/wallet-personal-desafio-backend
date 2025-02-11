@@ -11,6 +11,6 @@ import java.util.Map;
 @FeignClient(name = "api-usuario")
 public interface UserFeignClient {
     @GetMapping("/users/{userId}")
-    ResponseEntity<Map> getUserData(@PathVariable String userId, @RequestHeader("Authorization") String accessToken);
+    ResponseEntity<Map> obtenerUsuarioPorId(@PathVariable String userId, @RequestHeader("Authorization") String accessToken);
 }
 

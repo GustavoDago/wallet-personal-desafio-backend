@@ -13,6 +13,7 @@ import com.DigitalHouse.app.api_transactions.records.RecordAccount;
 import com.DigitalHouse.app.api_transactions.records.RecordTransaction;
 import com.DigitalHouse.app.api_transactions.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,8 @@ public class TransaccionServiceImp implements TransaccionService{
     @Autowired
     private CuentaFeignClient accountFeignClient;
 
-    double maxAmount = 3000d;
+    @Value("${maxAmount}")
+    private double maxAmount;
 
     @Override
     public List<Transaction> getUserActivities(String userId, String token, Optional<Integer> limit) {
@@ -85,7 +87,7 @@ public class TransaccionServiceImp implements TransaccionService{
         }
         // buscar cuenta del usuario
         RecordAccount accountOrigin = accountFeignClient.findAccount(activityRequest.origin());
-        ResponseEntity<Cuenta> accountDestination = accountFeignClient.getAccount(userId,accessToken);
+        RecordAccount accountDestination = accountFeignClient.findAccount(activityRequest.destination());
         if (accountOrigin.id() == null || accountDestination == null){
             throw new ResourceNotFoundException("Error - No se encuentran datos de cuenta correctos");
         }
@@ -100,10 +102,12 @@ public class TransaccionServiceImp implements TransaccionService{
         transfer.setDated(fecha);
         transfer.setType(TransactionType.Transfer);
         transfer.setOrigin(accountOrigin.id());
-        transfer.setDestination(accountDestination.getBody().getId());
+        transfer.setDestination(accountDestination.id());
         Transaction transactionSave = transactionRepository.save(transfer);
 
         updateAccountBalance(userId, monto, accessToken);
+
+        updateAccountBalance(accountDestination.userId(),activityRequest.amount(),accessToken);
 
         return transactionSave;
     }

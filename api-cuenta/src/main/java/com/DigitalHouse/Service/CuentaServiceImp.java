@@ -119,4 +119,35 @@ public class CuentaServiceImp implements CuentaService{
         if (data.userId() != null) account.setUserId(data.userId());
         return cuentaRepository.save(account);
     }
+
+    @Override
+    public Cuenta updateAccountBalance(String accountId, RecordAccount data) throws ResourceNotFoundException {
+
+        if (data.id() == null) throw new ResourceNotFoundException("No existe esa cuenta");
+
+        Cuenta account = cuentaRepository.findByUserId(data.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        // Actualizar los campos de la cuenta con los datos recibidos
+        if (data.alias() != null) account.setAlias(data.alias());
+        if (data.cvu() != null) account.setCvu(data.cvu());
+        if (data.balance() != 0d) account.setBalance(data.balance());
+        if (data.name() != null) account.setName(data.name());
+        if (data.userId() != null) account.setUserId(data.userId());
+        return cuentaRepository.save(account);
+
+    }
+
+    @Override
+    public RecordAccount getAccountByAccountId(String accountId) throws ResourceNotFoundException {
+        return cuentaRepository.findById(accountId)
+                .map(account -> new RecordAccount(
+                        account.getId(),
+                        account.getAlias(),
+                        account.getCvu(),
+                        account.getBalance(),
+                        account.getName(),
+                        account.getUserId()
+                ))
+                .orElseThrow(() -> new ResourceNotFoundException("No se encuentra cuenta"));
+    }
 }

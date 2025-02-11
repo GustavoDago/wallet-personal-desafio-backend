@@ -20,4 +20,8 @@ public interface CuentaService {
     Cuenta getAccountByUserId(String userId);
 
     Cuenta updateAccount(String userId, RecordAccount data) throws ResourceBadRequestException, ResourceNotFoundException;
+
+    Cuenta updateAccountBalance(String accountId, RecordAccount data) throws Exception;
+
+    RecordAccount getAccountByAccountId(String accountId) throws ResourceNotFoundException;
 }

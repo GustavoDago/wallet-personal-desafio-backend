@@ -76,6 +76,21 @@ public class CuentaController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/users/{userId}/accounts/{accountId}")
+    public ResponseEntity<?> updateAccountBalance(@PathVariable String userId,
+                                                  @PathVariable String accountId,
+                                                  @RequestBody RecordAccount data,
+                                                  @RequestHeader("Authorization") String accessToken) {
+        try {
+            Cuenta updatedAccount = cuentaService.updateAccountBalance(accountId,data);
+            return ResponseEntity.ok(updatedAccount);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    };
+
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarCuenta(@PathVariable String  id) {
         cuentaService.eliminarCuenta(id);
@@ -93,6 +108,16 @@ public class CuentaController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/account/{accountId}")
+    public RecordAccount findAccount (@PathVariable String accountId) throws ResourceNotFoundException {
+        try {
+            RecordAccount account = cuentaService.getAccountByAccountId(accountId);
+            return account;
+        } catch (ResourceNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 }
