@@ -7,11 +7,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="api-config" />
+        <module name="api-cuenta" />
+        <module name="api-transactions" />
         <module name="api-gateway" />
         <module name="api-cards" />
         <module name="api-eureka" />
-        <module name="api-cuenta" />
-        <module name="api-transactions" />
         <module name="api-usuario" />
       </profile>
     </annotationProcessing>
@@ -19,6 +20,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-cards" options="-parameters" />
+      <module name="api-config" options="-parameters" />
       <module name="api-cuenta" options="-parameters" />
       <module name="api-eureka" options="-parameters" />
       <module name="api-gateway" options="-parameters" />

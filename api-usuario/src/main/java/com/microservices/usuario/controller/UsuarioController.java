@@ -27,8 +27,7 @@ import java.util.Map;
 public class UsuarioController {
     @Autowired
     private final UsuarioService usuarioService;
-    @Autowired
-    private ObjectMapper objectMapper;
+
 
     @Value("${app.keycloak.realm}")
     private String realm;

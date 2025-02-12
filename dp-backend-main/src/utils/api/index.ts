@@ -24,23 +24,24 @@ const rejectPromise = (response?: Response): Promise<Response> =>
     err: true,
   });
 
-export const login = (email: string, password: string) => {
-  return fetch(myRequest(`${baseUrl}/api-usuario/login`, 'POST'), {
-    body: JSON.stringify({ email, password }),
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      return rejectPromise(response);
+  export const login = (email: string, password: string) => {
+    return fetch(myRequest(`${baseUrl}/api-usuario/login`, 'POST'), {
+      body: JSON.stringify({ email, password }),
     })
-    .catch((err) => {
-      console.log(err);
-      return rejectPromise(err);
-    });
-};
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        return rejectPromise(response);
+      })
+      .catch((err) => {
+        console.log(err);
+        return rejectPromise(err);
+      });
+  };
 
-export const createAnUser = (user: User) => {
+//Improved typing
+export const createAnUser = (user: Omit<User, 'id'>) => { // Omit the 'id' since it's generated
   return fetch(myRequest(`${baseUrl}/api-usuario/register`, 'POST'), {
     body: JSON.stringify(user),
   })
@@ -49,10 +50,6 @@ export const createAnUser = (user: User) => {
         return response.json();
       }
       return rejectPromise(response);
-    })
-    .then((data) => {
-      createAnAccount(data);
-      return data;
     })
     .catch((err) => {
       console.log(err);
@@ -71,9 +68,10 @@ export const getUser = (id: string): Promise<User> => {
     });
 };
 
+//Improved typing
 export const updateUser = (
   id: string,
-  data: any,
+  data: Partial<User>,  // Partial<User> allows updating only some fields
   token: string
 ): Promise<Response> => {
   return fetch(myRequest(`${baseUrl}/api-usuario/users/${id}`, 'PATCH', token), {
@@ -91,11 +89,10 @@ export const updateUser = (
 
 
 
-export const createAnAccount = (data: any): Promise<Response> => {
-  const { user, accessToken } = data;
+export const createAnAccount = (userId: string, accessToken: string): Promise<Response> => {
 
   return fetch(
-    myRequest(`${baseUrl}/api-cuenta/users/${user.id}/accounts`, 'POST', accessToken),
+    myRequest(`${baseUrl}/api-cuenta/users/${userId}/accounts`, 'POST', accessToken),
     {
 
     }

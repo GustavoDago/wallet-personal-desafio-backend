@@ -2,7 +2,7 @@ server:
   port: 8888
 spring:
   application:
-    name: Config-server
+    name: api-config
   cloud:
     config:
       server:
