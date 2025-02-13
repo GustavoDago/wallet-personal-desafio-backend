@@ -41,21 +41,36 @@ const rejectPromise = (response?: Response): Promise<Response> =>
   };
 
 //Improved typing
-export const createAnUser = (user: Omit<User, 'id'>) => { // Omit the 'id' since it's generated
+export const createAnUser = (user: Omit<User, 'id'>) => {
   return fetch(myRequest(`${baseUrl}/api-usuario/register`, 'POST'), {
     body: JSON.stringify(user),
   })
     .then((response) => {
       if (response.ok) {
-        return response.json();
+        // SUCCESSFUL response (2xx status code)
+        return response.json(); // Parse the JSON body
+      } else {
+        // ERROR response (non-2xx status code)
+        // Attempt to parse the JSON error response, if it exists.
+        return response.json() // Important!  Try to get JSON error body
+            .then(errorData => {
+                // If we *could* parse the JSON, reject with that data
+                return Promise.reject(errorData); // Reject with the parsed error object
+            })
+            .catch(() => {
+              // If parsing the JSON *failed*, reject with a generic error
+              return rejectPromise(response);
+            });
       }
-      return rejectPromise(response);
     })
     .catch((err) => {
-      console.log(err);
-      return rejectPromise(err);
+      // This catches *network* errors AND rejections from the .then block above
+      console.error("Error creating user:", err);
+      return Promise.reject(err); // Re-reject to propagate to the caller
     });
 };
+
+
 
 export const getUser = (id: string): Promise<User> => {
   return fetch(myRequest(`${baseUrl}/api-usuario/users/${id}`, 'GET'))

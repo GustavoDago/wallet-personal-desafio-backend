@@ -23,7 +23,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping
-@CrossOrigin
 public class UsuarioController {
     @Autowired
     private final UsuarioService usuarioService;
