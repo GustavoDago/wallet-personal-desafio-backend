@@ -1,10 +1,10 @@
-server:
-  port: 8888
 spring:
-  application:
-    name: api-config
   cloud:
     config:
       server:
         git:
           uri: https://github.com/GustavoDago/config-desafio-profesional
+  application:
+    name: config-server
+server:
+  port: 8888

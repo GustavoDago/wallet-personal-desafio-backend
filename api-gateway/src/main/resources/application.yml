@@ -1,73 +1,14 @@
-server:
-  port: 3500
 spring:
   application:
-    name: gateway
+    name: api-gateway
   config:
     import: optional:configserver:http://localhost:8888
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      globalcors:
-        cors-configurations:
-          '[/**]':  # Apply CORS to all paths
-            allowedOrigins: "http://localhost:5173" # Allow requests from your frontend.  SHOULD MATCH YOUR FRONTEND EXACTLY.
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*" # You can be more specific here in production.  'Authorization' is important.
-            allowCredentials: true  # If you are using cookies/sessions, set this to true
-            exposedHeaders:
-              - "Authorization"  # Important to expose the Authorization header if your frontend needs it after a redirect, for instance.
-      routes:
-        - id: usuario-service
-          uri: lb://api-usuario  # Use 'lb://' for load-balanced routing (via Eureka)
-          predicates:
-            - Path=/api-usuario/**
-          filters:
-            - RewritePath=/api-usuario/(?<segment>.*), /$\{segment} # Remove /api-usuario prefix
-
-        - id: cuenta-service
-          uri: lb://api-cuenta
-          predicates:
-            - Path=/api-cuenta/**
-          filters:
-            - RewritePath=/api-cuenta/(?<segment>.*), /$\{segment}
-
-        - id: transacciones-service
-          uri: lb://api-transacciones
-          predicates:
-            - Path=/api-transaccion/**
-          filters:
-            - RewritePath=/api-transaccion/(?<segment>.*), /$\{segment}
-
-        - id: cards-service
-          uri: lb://api-cards
-          predicates:
-            - Path=/api-cards/**
-          filters:
-            - RewritePath=/api-cards/(?<segment>.*), /$\{segment}
   security: # Add security configuration here
     oauth2:
       client:
         resourceserver:
           jwt:
             issuer-uri: ${app.keycloak.serverUrl}/realms/${app.keycloak.realm}
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true  # The gateway needs to fetch the registry
-    register-with-eureka: true # The gateway *should* register itself (for monitoring, etc.)
-  instance:
-    prefer-ip-address: true  # Use IP address instead of hostname
 app:
   keycloak:
     realm: spring
