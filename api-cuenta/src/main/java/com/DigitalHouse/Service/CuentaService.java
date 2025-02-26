@@ -17,7 +17,7 @@ public interface CuentaService {
     void eliminarCuenta(String  id);
     void actualizarAlias(String userId, String newAlias);
 
-    Cuenta getAccountByUserId(String userId);
+    Cuenta getAccountByUserId(String userId) throws ResourceNotFoundException;
 
     Cuenta updateAccount(String userId, RecordAccount data) throws ResourceBadRequestException, ResourceNotFoundException;
 

@@ -120,4 +120,15 @@ public class CuentaController {
             throw new RuntimeException(e);
         }
     }
+
+    @GetMapping("account/AccountByUserId/{userId}")
+    public String getAccountIdByUserId(@PathVariable String userId,
+                                       @RequestHeader("Authorization") String accessToken) throws ResourceNotFoundException {
+        try {
+            String accountId = cuentaService.getAccountByUserId(userId).getId();
+            return accountId;
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }
+    }
 }

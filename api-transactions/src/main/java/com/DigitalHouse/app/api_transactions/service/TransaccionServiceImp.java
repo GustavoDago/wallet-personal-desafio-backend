@@ -1,7 +1,7 @@
 package com.DigitalHouse.app.api_transactions.service;
 
 
-import com.DigitalHouse.Entity.Cuenta;
+
 import com.DigitalHouse.app.api_transactions.entity.Transaction;
 import com.DigitalHouse.app.api_transactions.entity.TransactionType;
 import com.DigitalHouse.app.api_transactions.exceptions.NotApprovedTransaction;
@@ -48,10 +48,7 @@ public class TransaccionServiceImp implements TransaccionService{
             throw new ResourceNotFoundException("Error - No se encuentran datos del usuario");
         }
         // buscar cuenta del usuario
-        ResponseEntity<Cuenta> accountResponse = accountFeignClient.getAccount(userId, accessToken);
-        if (accountResponse.getStatusCode().isError()) {
-            throw new ResourceNotFoundException("Error - No se encuentra esa cuenta de usuario");
-        }
+        String accountId = accountFeignClient.getAccountIdByUserId(userId, accessToken);
 
         // comprobar que el monto no supere los 3000
         double monto = activityRequest.amount();
@@ -66,12 +63,12 @@ public class TransaccionServiceImp implements TransaccionService{
         deposit.setAmount(monto);
         deposit.setDated(fecha);
         deposit.setType(TransactionType.Deposit);
-        deposit.setOrigin(accountResponse.getBody().getId());
+        deposit.setOrigin(accountId);
         deposit.setDestination(activityRequest.destination());
 
         try {
             Transaction transactionSave = transactionRepository.save(deposit);
-            updateAccountBalance(userId, monto, accessToken);
+            updateAccountBalance(accountId, monto, accessToken);
             return transactionSave;
         } catch (Exception e) {
             throw new NotApprovedTransaction("Hay un error en el procesamiento de la transacción");
@@ -88,9 +85,7 @@ public class TransaccionServiceImp implements TransaccionService{
         // buscar cuenta del usuario
         RecordAccount accountOrigin = accountFeignClient.findAccount(activityRequest.origin());
         RecordAccount accountDestination = accountFeignClient.findAccount(activityRequest.destination());
-        if (accountOrigin.id() == null || accountDestination == null){
-            throw new ResourceNotFoundException("Error - No se encuentran datos de cuenta correctos");
-        }
+
         // Lógica para crear transferencia
         // Llena los detalles de la transferencia según `activityRequest`
         String fecha = LocalDateTime.now().toString();
@@ -105,9 +100,9 @@ public class TransaccionServiceImp implements TransaccionService{
         transfer.setDestination(accountDestination.id());
         Transaction transactionSave = transactionRepository.save(transfer);
 
-        updateAccountBalance(userId, monto, accessToken);
+        updateAccountBalance(accountOrigin.id(), monto, accessToken);
 
-        updateAccountBalance(accountDestination.userId(),activityRequest.amount(),accessToken);
+        updateAccountBalance(accountDestination.id(),activityRequest.amount(),accessToken);
 
         return transactionSave;
     }
@@ -128,39 +123,36 @@ public class TransaccionServiceImp implements TransaccionService{
     }
 
     @Override
-    public void updateAccountBalance(String userId, double monto, String accessToken) throws ResourceNotFoundException {
+    public void updateAccountBalance(String accountId, double monto, String accessToken) throws ResourceNotFoundException {
         // buscar cuenta del usuario
-        ResponseEntity<?> accountResponse = accountFeignClient.getAccount(userId,accessToken);
-        if (accountResponse.getStatusCode().isError()){
-            throw new ResourceNotFoundException("Error - No se encuentra esa cuenta de usuario");
-        }
-        Object responseBody = accountResponse.getBody();
-        if (responseBody instanceof Cuenta) {
-            Cuenta account = (Cuenta) responseBody;
-            // Ahora puedo acceder a los datos del objeto account
-            String id = account.getId();
-            String alias = account.getAlias();
-            String cvu = account.getCvu();
-            // en caso de una transferencia, el monto viene negativo
-            double balance = account.getBalance() + monto;
-            String name = account.getName();
-            RecordAccount recordAccount = new RecordAccount(
-                    id,
-                    alias,
-                    cvu,
-                    balance,
-                    name,
-                    userId
-            );
-            accountFeignClient.updateAccountBalance(userId,id,recordAccount,accessToken);
-            System.out.println("ID: " + id);
-            System.out.println("Alias: " + alias);
-            System.out.println("CVU: " + cvu);
-            System.out.println("Balance: " + balance);
-            System.out.println("Name: " + name);
-            System.out.println("User ID: " + userId);
-        } else {
-            throw new IllegalArgumentException("Error - El cuerpo de la respuesta no es una instancia de Account");}
+        RecordAccount account = accountFeignClient.findAccount(accountId);
+
+        // Ahora puedo acceder a los datos del objeto account
+        String id = account.id();
+        String alias = account.alias();
+        String cvu = account.cvu();
+        String userId = account.userId();
+        String name = account.name();
+
+        // en caso de una transferencia, el monto viene negativo
+        double balance = account.balance() + monto;
+
+        RecordAccount recordAccount = new RecordAccount(
+                id,
+                alias,
+                cvu,
+                balance,
+                name,
+                userId
+        );
+        accountFeignClient.updateAccountBalance(userId, id, recordAccount, accessToken);
+        System.out.println("ID: " + id);
+        System.out.println("Alias: " + alias);
+        System.out.println("CVU: " + cvu);
+        System.out.println("Balance: " + balance);
+        System.out.println("Name: " + name);
+        System.out.println("User ID: " + userId);
+
     }
 
     @Override

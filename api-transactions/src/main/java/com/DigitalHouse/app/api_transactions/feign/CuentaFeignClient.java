@@ -1,6 +1,6 @@
 package com.DigitalHouse.app.api_transactions.feign;
 
-import com.DigitalHouse.Entity.Cuenta;
+
 
 import com.DigitalHouse.app.api_transactions.records.RecordAccount;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "api-cuenta")
 public interface CuentaFeignClient {
     @GetMapping("/users/{userId}/accounts")
-    public ResponseEntity<Cuenta> getAccount(@PathVariable String userId,
+    public ResponseEntity<?> getAccount(@PathVariable String userId,
                                              @RequestHeader("Authorization") String accessToken);
     @PutMapping("/users/{userId}/accounts/{accountId}")
     public ResponseEntity<?> updateAccountBalance(@PathVariable String userId,
@@ -19,4 +19,8 @@ public interface CuentaFeignClient {
                                            @RequestHeader("Authorization") String accessToken);
     @GetMapping("/account/{accountId}")
     public RecordAccount findAccount (@PathVariable String accountId);
+
+    @GetMapping("account/AccountByUserId/{userId}")
+    public String getAccountIdByUserId(@PathVariable String userId,
+                                       @RequestHeader("Authorization") String accessToken);
 }

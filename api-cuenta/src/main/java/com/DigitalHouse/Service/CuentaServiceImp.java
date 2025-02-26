@@ -102,8 +102,8 @@ public class CuentaServiceImp implements CuentaService{
     }
 
     @Override
-    public Cuenta getAccountByUserId(String userId) {
-        return cuentaRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("No account found for userId: " + userId));    }
+    public Cuenta getAccountByUserId(String userId) throws ResourceNotFoundException {
+        return cuentaRepository.findByUserId(userId).orElseThrow(() -> new ResourceNotFoundException("No account found for userId: " + userId));    }
 
     @Override
     public Cuenta updateAccount(String userId, RecordAccount data) throws ResourceBadRequestException, ResourceNotFoundException {
