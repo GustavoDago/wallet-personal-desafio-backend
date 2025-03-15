@@ -6,4 +6,4 @@ spring:
 app:
   keycloak:
     admin:
-      clientSecret: D4t1t3odiT8YDKRDWQTXOGrL28ocZoq3
+      clientSecret: gTYNs46PlfDQSdpYP5cvMNix2SC2Cz1f

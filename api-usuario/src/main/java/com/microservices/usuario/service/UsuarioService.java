@@ -6,6 +6,7 @@ import com.microservices.usuario.exception.ResourceBadRequestException;
 import com.microservices.usuario.records.NewUserRecord;
 import com.microservices.usuario.records.UserWithToken;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
@@ -21,6 +22,5 @@ public interface UsuarioService {
     Usuario obtenerUsuarioPorId(String id);
 
     String obtenerUserName(String id);
-
     UserResource getUser(String userId);
 }

@@ -32,7 +32,7 @@ public class TransaccionServiceImp implements TransaccionService{
     private CuentaFeignClient accountFeignClient;
 
     @Value("${maxAmount}")
-    private double maxAmount;
+    protected double maxAmount;
 
     @Override
     public List<Transaction> getUserActivities(String userId, String token, Optional<Integer> limit) {

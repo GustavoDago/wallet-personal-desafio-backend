@@ -24,7 +24,7 @@ spring:
 app:
   keycloak:
     admin:
-      clientId: admin-cli
+      clientId: app-wallet
       clientSecret: Y1jxfCXlaLYyVrUGOCfRpUB1Yv5lH4d7
     realm: spring
     serverUrl: http://localhost:9081

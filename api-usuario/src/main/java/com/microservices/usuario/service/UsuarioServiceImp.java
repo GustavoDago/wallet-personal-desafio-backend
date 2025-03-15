@@ -7,7 +7,6 @@ import com.microservices.usuario.exception.RestException;
 import com.microservices.usuario.records.NewUserRecord;
 import com.microservices.usuario.records.UserWithToken;
 import jakarta.ws.rs.core.Response;
-
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
@@ -30,26 +29,42 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class UsuarioServiceImp implements UsuarioService{
+public class UsuarioServiceImp implements UsuarioService {
 
+
+
+    private final Keycloak keycloak;
+    private final TokenProvider tokenProvider;
 
     @Value("${app.keycloak.realm}")
     private String realm;
-
     @Value("${app.keycloak.admin.clientId}")
     private String clientId;
-
     @Value(("${app.keycloak.admin.clientSecret}"))
     private String clientSecret;
 
-    @Autowired
-    private final Keycloak keycloak;
-
-    public UsuarioServiceImp(Keycloak keycloak) {
+    public UsuarioServiceImp(Keycloak keycloak, TokenProvider tokenProvider) {
         this.keycloak = keycloak;
+        this.tokenProvider = tokenProvider;
     }
 
+    private static UserRepresentation getUserRepresentation(NewUserRecord newUserRecord) {
+        UserRepresentation user = new UserRepresentation();
+        user.setEnabled(true);
+        user.setFirstName(newUserRecord.firstName());
+        user.setLastName(newUserRecord.lastName());
+        user.setUsername(newUserRecord.email());
+        user.setEmail(newUserRecord.email());
+        user.setEmailVerified(true);
+        user.singleAttribute("phone", newUserRecord.phone());
+        user.singleAttribute("dni", newUserRecord.dni());
+        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+        credentialRepresentation.setValue(newUserRecord.password());
+        credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
 
+        user.setCredentials(List.of(credentialRepresentation));
+        return user;
+    }
 
     @Override
     public UserWithToken crearUsuario(NewUserRecord newUserRecord) throws ResourceBadRequestException, NotApprovedTransaction {
@@ -73,7 +88,7 @@ public class UsuarioServiceImp implements UsuarioService{
 
         Usuario user = convertToUser(userCreated);
         // Obtener el accessToken para el usuario recién creado
-        String accessToken = getToken(newUserRecord.email(),newUserRecord.password()).getToken();
+        String accessToken = tokenProvider.getToken(newUserRecord.email(), newUserRecord.password()).getToken();
 
         return new UserWithToken(user, accessToken);
     }
@@ -84,36 +99,6 @@ public class UsuarioServiceImp implements UsuarioService{
         return usersResource.get(userId);
     }
 
-    private AccessTokenResponse getToken(String email, String password) {
-        RestTemplate restTemplate = new RestTemplate();
-        String tokenUrl = "http://localhost:9081/realms/" + realm + "/protocol/openid-connect/token";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);  // Necesario si el cliente está configurado con secreto
-        body.add("grant_type", "password");
-        body.add("username", email);
-        body.add("password", password);
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<AccessTokenResponse> response = restTemplate.exchange(
-                tokenUrl,
-                HttpMethod.POST,
-                entity,
-                AccessTokenResponse.class
-        );
-
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            throw new RestException(HttpStatus.BAD_REQUEST, "Error al obtener el token: " + response.getStatusCode());
-        }
-
-    }
     public Usuario convertToUser(UserRepresentation userRepresentation) {
         Usuario user = new Usuario();
         user.setId(userRepresentation.getId());
@@ -127,7 +112,7 @@ public class UsuarioServiceImp implements UsuarioService{
         return user;
     }
 
-    private UsersResource getUsersResource(){
+    private UsersResource getUsersResource() {
         return keycloak.realm(realm).users();
     }
 
@@ -136,26 +121,9 @@ public class UsuarioServiceImp implements UsuarioService{
         if (userRepresentations.isEmpty()) {
             throw new RestException(HttpStatus.NOT_FOUND, "No se encontró el usuario creado");
         }
-        return  userRepresentations.get(0);
+        return userRepresentations.get(0);
     }
 
-    private static UserRepresentation getUserRepresentation(NewUserRecord newUserRecord) {
-        UserRepresentation user= new UserRepresentation();
-        user.setEnabled(true);
-        user.setFirstName(newUserRecord.firstName());
-        user.setLastName(newUserRecord.lastName());
-        user.setUsername(newUserRecord.email());
-        user.setEmail(newUserRecord.email());
-        user.setEmailVerified(true);
-        user.singleAttribute("phone", newUserRecord.phone());
-        user.singleAttribute("dni", newUserRecord.dni());
-        CredentialRepresentation credentialRepresentation=new CredentialRepresentation();
-        credentialRepresentation.setValue(newUserRecord.password());
-        credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
-
-        user.setCredentials(List.of(credentialRepresentation));
-        return user;
-    }
     private boolean validar(NewUserRecord nur) {
         String email = nur.email();
         int indexAt = email.indexOf('@');
@@ -166,9 +134,6 @@ public class UsuarioServiceImp implements UsuarioService{
         return (email.length() < 5 || nur.password().isBlank()
                 || nur.firstName().isBlank() || nur.lastName().isBlank() || !hasValidEmail);
     }
-
-
-
 
 
     @Override
@@ -199,38 +164,47 @@ public class UsuarioServiceImp implements UsuarioService{
         } catch (Exception e) {
             log.error("Error inesperado al actualizar el usuario con ID: {}: {}", id, e.getMessage(), e);
             return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado al actualizar el usuario");
-        } finally {
-            log.info("Finalizando el proceso de actualización del usuario con ID: {}", id);
         }
     }
 
+    private static final List<String> STRING_FIELDS = List.of("email", "firstName", "lastName", "phone", "dni");
+
     private void validateUpdateData(Map<String, Object> data) throws ResourceBadRequestException {
         log.debug("Validando datos de actualización: {}", data);
+
+        // Verifica si el mapa es nulo o vacío
         if (data == null || data.isEmpty()) {
             throw new ResourceBadRequestException("Los datos de actualización no pueden estar vacíos.");
         }
+
         // Validaciones específicas de tipo y contenido
-        data.forEach((key, value) -> {
-            if (value != null) {
-                if (List.of("email", "firstName", "lastName", "phone", "dni").contains(key) && !(value instanceof String)) {
-                    try {
-                        throw new ResourceBadRequestException(String.format("El campo '%s' debe ser una cadena de texto.", key));
-                    } catch (ResourceBadRequestException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                // Puedes agregar validaciones de formato aquí si es necesario (ej. regex para email, teléfono)
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value == null) {
+                continue; // Opcional: Ignorar valores nulos
             }
-        });
+
+            if (STRING_FIELDS.contains(key) && !(value instanceof String)) {
+                throw new ResourceBadRequestException(String.format("El campo '%s' debe ser una cadena de texto.", key));
+            }
+
+
+        }
     }
+
+
 
     private UserRepresentation fetchUser(String id) throws RestException {
         log.debug("Obteniendo la representación del usuario de Keycloak con ID: {}", id);
         try {
             return keycloak.realm(realm).users().get(id).toRepresentation();
+
+            //Capturo la excepcion, y la convierto a una RestException.
         } catch (jakarta.ws.rs.NotFoundException e) {
             log.warn("Usuario no encontrado en Keycloak con ID: {}", id);
-            throw new RestException(HttpStatus.NOT_FOUND, "Usuario no encontrado.");
+            throw new RestException(HttpStatus.NOT_FOUND, "Usuario no encontrado."); //Relanzamos como RestException.
         } catch (Exception e) {
             log.error("Error al obtener la representación del usuario con ID: {}: {}", id, e.getMessage());
             throw new RestException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener información del usuario en Keycloak.");
@@ -250,7 +224,7 @@ public class UsuarioServiceImp implements UsuarioService{
         }
 
         // Actualizar atributos personalizados de forma más clara y segura
-        Map<String, List<String>> attributes = user.getAttributes() == null ? new HashMap() : user.getAttributes();
+        Map<String, List<String>> attributes = user.getAttributes() == null ? new HashMap<>() : user.getAttributes();
         updateAttribute(attributes, "phone", data.get("phone"));
         updateAttribute(attributes, "dni", data.get("dni"));
         user.setAttributes(attributes);
@@ -279,7 +253,6 @@ public class UsuarioServiceImp implements UsuarioService{
     }
 
     private ResponseEntity<Map<String, Object>> buildSuccessResponse(String id, UserRepresentation user) {
-
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("id", id);
         responseBody.put("email", user.getEmail());
@@ -305,7 +278,7 @@ public class UsuarioServiceImp implements UsuarioService{
 
         try {
             // Obtener el token de acceso
-            AccessTokenResponse tokenResponse = getToken(email, password);
+            AccessTokenResponse tokenResponse = tokenProvider.getToken(email, password);
 
             // Si se obtiene un token, la autenticación es exitosa
             if (tokenResponse != null && tokenResponse.getToken() != null) {
@@ -348,15 +321,14 @@ public class UsuarioServiceImp implements UsuarioService{
     }
 
 
-
     @Override
     public String obtenerUserName(String id) {
-            String respuesta = "";
-            UserRepresentation userRepresentation = getUser(id).toRepresentation();
-            if (userRepresentation.isEnabled()){
-                respuesta = userRepresentation.getUsername();
-            }
-            return respuesta;
+        String respuesta = "";
+        UserRepresentation userRepresentation = getUser(id).toRepresentation();
+        if (userRepresentation.isEnabled()) {
+            respuesta = userRepresentation.getUsername();
+        }
+        return respuesta;
     }
 
     @Override

@@ -25,8 +25,8 @@ spring:
 app:
   keycloak:
     admin:
-      clientId: admin-cli
-      clientSecret: wtjcofHqRcqmus9oOCDahU7MG9jv4GVP
+      clientId: app-wallet
+      clientSecret: gTYNs46PlfDQSdpYP5cvMNix2SC2Cz1f
     realm: spring
     serverUrl: http://localhost:9081
 eureka:
